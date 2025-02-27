@@ -245,6 +245,42 @@ input[type="text"], input[type="number"] {
     animation: modal-appear 0.3s forwards;
 }
 
+/* ...existing code... */
+
+/* Settings Panel */
+.settings-panel {
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+    text-align: right;
+}
+
+.danger-btn {
+    background-color: var(--secondary-color);
+}
+
+.danger-btn:hover {
+    background-color: #ff4f4f;
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#reset-code {
+    margin-top: 15px;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
 @keyframes modal-appear {
     from { transform: scale(0.8); opacity: 0; }
     to { transform: scale(1); opacity: 1; }

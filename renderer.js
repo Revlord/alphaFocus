@@ -36,6 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('close-modal').addEventListener('click', () => {
         document.getElementById('level-up-modal').style.display = 'none';
     });
+    // Add these reset button event listeners
+    document.getElementById('reset-game-btn').addEventListener('click', showResetModal);
+    document.getElementById('cancel-reset-btn').addEventListener('click', hideResetModal);
+    document.getElementById('confirm-reset-btn').addEventListener('click', attemptGameReset);
     
     // Update UI with initial values
     updateUI();
@@ -323,6 +327,10 @@ function getCurrentRank() {
     return ranks[0]; // Default to lowest rank
 }
 
+function resetAllTasks() {
+
+}
+
 // Gain XP and check for level up
 function gainXP(amount) {
     xp += amount;
@@ -379,6 +387,65 @@ function getCurrentRankForLevel(level) {
         }
     }
     return ranks[0];
+}
+
+function showResetModal() {
+    document.getElementById('reset-modal').style.display = 'flex';
+    document.getElementById('reset-code').value = '';
+    document.getElementById('reset-code').focus();
+    
+}
+
+// Hide the reset confirmation modal
+function hideResetModal() {
+    document.getElementById('reset-modal').style.display = 'none';
+}
+
+// Attempt to reset the game with the secret code
+function attemptGameReset() {
+    const secretCode = 'grindfor2030';
+    const enteredCode = document.getElementById('reset-code').value;
+    
+    if (enteredCode === secretCode) {
+        resetGameData();
+        hideResetModal();
+        alert('Game data has been reset successfully!');
+    } else {
+        alert('Incorrect secret code. Game data was not reset.');
+    }
+}
+
+function resetGameData() {
+    // Reset all game state variables
+    xp = 0;
+    level = 1;
+    gold = 0;
+    quests = [];
+    activeQuest = null;
+    stopwatchTime = 0;
+    completedQuests = [];
+    xpToNextLevel = 500;
+    
+    // Reset achievements
+    achievements.forEach(achievement => {
+        achievement.completed = false;
+    });
+    
+    // Clear active quest display
+    if (stopwatchInterval) {
+        stopStopwatch();
+    }
+    document.getElementById('no-active-quest').classList.remove('hidden');
+    document.getElementById('quest-details').classList.add('hidden');
+    
+    // Save reset state
+    saveGameState();
+    
+    // Update UI
+    updateStopwatchDisplay();
+    renderQuestsList();
+    renderQuestHistory();
+    updateUI();
 }
 
 // Check for unlocked achievements
