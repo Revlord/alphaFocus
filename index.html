@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus RPG</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Focus RPG - Level Up Your Brain!</h1>
+        </header>
+        
+        <div class="stats-panel">
+            <div class="stat">
+                <label>Level:</label>
+                <span id="level">1</span>
+                <div class="rank" id="rank">Goldfish Brain 🐠</div>
+            </div>
+            <div class="stat">
+                <label>XP:</label>
+                <span id="xp">0</span> / <span id="xp-to-level">500</span>
+                <div class="progress-bar">
+                    <div class="progress" id="xp-progress"></div>
+                </div>
+            </div>
+            <div class="stat">
+                <label>Gold:</label>
+                <span id="gold">0</span> 💰
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="quest-panel">
+                <h2>🔥 Your Quests</h2>
+                <div class="add-quest">
+                    <input type="text" id="quest-name" placeholder="Enter quest name...">
+                    <input type="number" id="quest-xp" placeholder="XP reward" min="1" value="10">
+                    <button id="add-quest-btn">Add Quest</button>
+                </div>
+                
+                <div class="quests-list" id="quests-list">
+                    <!-- Quests will be added here dynamically -->
+                </div>
+            </div>
+            
+            <div class="active-quest-panel" id="active-quest-panel">
+                <h2>⚔️ Active Quest</h2>
+                <div id="no-active-quest">No active quest. Start one from your quests list!</div>
+                <div id="quest-details" class="hidden">
+                    <h3 id="active-quest-name">Quest Name</h3>
+                    <div id="stopwatch">00:00:00</div>
+                    <div class="quest-controls">
+                        <button id="complete-quest-btn">Complete Quest</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="achievements-panel">
+                <h2>🏆 Achievements</h2>
+                <ul id="achievements-list">
+                    <li class="locked">First Victory - Focus for 10 minutes</li>
+                    <li class="locked">Silver Mind - Complete 5x 30-Min Focus Sessions</li>
+                    <li class="locked">Brain of Steel - Focus for 3 hours in a day</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="history-panel">
+            <h2>📜 Quest History</h2>
+            <div class="history-list" id="history-list">
+                <!-- Completed quests will be shown here -->
+            </div>
+        </div>
+    </div>
+    
+    <div id="level-up-modal" class="modal">
+        <div class="modal-content">
+            <h2>🎉 LEVEL UP! 🎉</h2>
+            <p>Congratulations! You've reached level <span id="new-level">2</span>!</p>
+            <p>New rank: <span id="new-rank">Bronze Novice 🎖️</span></p>
+            <button id="close-modal">Continue</button>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
