@@ -5,39 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Focus RPG</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🎮 Focus RPG - Level Up Your Brain!</h1>
+            <h1> AlphaFocus <span>- Level Up Your Brain!</span></h1>
         </header>
         
         <div class="stats-panel">
             <div class="stat">
-                <label>Level:</label>
+                <label>Level</label>
                 <span id="level">1</span>
                 <div class="rank" id="rank">Goldfish Brain 🐠</div>
             </div>
             <div class="stat">
-                <label>XP:</label>
+                <label>Experience</label>
                 <span id="xp">0</span> / <span id="xp-to-level">500</span>
                 <div class="progress-bar">
                     <div class="progress" id="xp-progress"></div>
                 </div>
             </div>
             <div class="stat">
-                <label>Gold:</label>
-                <span id="gold">0</span> 💰
+                <label>Gold</label>
+                <span id="gold">0</span> <span class="gold-icon">💰</span>
             </div>
         </div>
         
         <div class="main-content">
             <div class="quest-panel">
-                <h2>🔥 Your Quests</h2>
+                <h2><i class="fas fa-fire"></i> Your Quests</h2>
                 <div class="add-quest">
                     <input type="text" id="quest-name" placeholder="Enter quest name...">
                     <input type="number" id="quest-xp" placeholder="XP reward" min="1" value="10">
-                    <button id="add-quest-btn">Add Quest</button>
+                    <button id="add-quest-btn"><i class="fas fa-plus"></i> Add</button>
                 </div>
                 
                 <div class="quests-list" id="quests-list">
@@ -46,19 +48,19 @@
             </div>
             
             <div class="active-quest-panel" id="active-quest-panel">
-                <h2>⚔️ Active Quest</h2>
-                <div id="no-active-quest">No active quest. Start one from your quests list!</div>
+                <h2><i class="fas fa-sword"></i> Active Quest</h2>
+                <div id="no-active-quest" class="empty-state">No active quest. Start one from your quests list!</div>
                 <div id="quest-details" class="hidden">
                     <h3 id="active-quest-name">Quest Name</h3>
                     <div id="stopwatch">00:00:00</div>
                     <div class="quest-controls">
-                        <button id="complete-quest-btn">Complete Quest</button>
+                        <button id="complete-quest-btn"><i class="fas fa-check"></i> Complete Quest</button>
                     </div>
                 </div>
             </div>
             
             <div class="achievements-panel">
-                <h2>🏆 Achievements</h2>
+                <h2><i class="fas fa-trophy"></i> Achievements</h2>
                 <ul id="achievements-list">
                     <li class="locked">First Victory - Focus for 10 minutes</li>
                     <li class="locked">Silver Mind - Complete 5x 30-Min Focus Sessions</li>
@@ -68,13 +70,13 @@
         </div>
         
         <div class="history-panel">
-            <h2>📜 Quest History</h2>
+            <h2><i class="fas fa-scroll"></i> Quest History</h2>
             <div class="history-list" id="history-list">
                 <!-- Completed quests will be shown here -->
             </div>
         </div>
         <div class="settings-panel">
-            <button id="reset-game-btn" class="danger-btn">Reset Game Data</button>
+            <button id="reset-game-btn" class="danger-btn"><i class="fas fa-trash-alt"></i> Reset Game Data</button>
         </div>
     </div>
     
@@ -83,7 +85,7 @@
             <h2>🎉 LEVEL UP! 🎉</h2>
             <p>Congratulations! You've reached level <span id="new-level">2</span>!</p>
             <p>New rank: <span id="new-rank">Bronze Novice 🎖️</span></p>
-            <button id="close-modal">Continue</button>
+            <button id="close-modal"><i class="fas fa-arrow-right"></i> Continue</button>
         </div>
     </div>
         
@@ -94,8 +96,8 @@
             <p>Enter the secret code to continue:</p>
             <input type="password" id="reset-code" placeholder="Enter secret code...">
             <div class="modal-buttons">
-                <button id="confirm-reset-btn" class="danger-btn">Reset Everything</button>
-                <button id="cancel-reset-btn">Cancel</button>
+                <button id="confirm-reset-btn" class="danger-btn"><i class="fas fa-exclamation-triangle"></i> Reset Everything</button>
+                <button id="cancel-reset-btn"><i class="fas fa-times"></i> Cancel</button>
             </div>
         </div>
     </div>
