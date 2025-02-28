@@ -6,6 +6,7 @@ let quests = [];
 let activeQuest = null;
 let stopwatchInterval = null;
 let stopwatchTime = 0;
+let stopwatchStart = 0;
 let completedQuests = [];
 let xpToNextLevel = 500;
 let achievements = [
@@ -207,6 +208,17 @@ function startQuest(questId) {
         }
         stopStopwatch();
         activeQuest = null;
+        if (quest) {
+            activeQuest = { ...quest, startTime: new Date() };
+            
+            // Update UI to show active quest
+            document.getElementById('no-active-quest').classList.add('hidden');
+            document.getElementById('quest-details').classList.remove('hidden');
+            document.getElementById('active-quest-name').innerText = quest.name;
+    
+            // Start the stopwatch
+            startStopwatch();
+        }
     }
     
     // Find the quest by ID
@@ -227,19 +239,27 @@ function startQuest(questId) {
     }
 }
 
-// Start the stopwatch
+// Replace startStopwatch with this implementation
 function startStopwatch() {
+    // Record the start time (reset for this session)
+    stopwatchStart = Date.now();
+    // Clear any existing interval
+    if (stopwatchInterval) clearInterval(stopwatchInterval);
+    // Update the stopwatch display four times per second
     stopwatchInterval = setInterval(() => {
-        stopwatchTime++;
+        stopwatchTime = Math.floor((Date.now() - stopwatchStart) / 1000);
         updateStopwatchDisplay();
-    }, 1000);
+    }, 250);
 }
 
-// Stop the stopwatch
+// Replace stopStopwatch with this implementation
 function stopStopwatch() {
     if (stopwatchInterval) {
         clearInterval(stopwatchInterval);
         stopwatchInterval = null;
+        // Final update in case there's any lag
+        stopwatchTime = Math.floor((Date.now() - stopwatchStart) / 1000);
+        updateStopwatchDisplay();
     }
 }
 
