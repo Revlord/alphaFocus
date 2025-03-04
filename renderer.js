@@ -10,9 +10,12 @@ let stopwatchStart = 0;
 let completedQuests = [];
 let xpToNextLevel = 500;
 let achievements = [
-    { id: 1, name: "First Victory", description: "Focus for 10 minutes", xp: 100, completed: false, condition: () => false },
-    { id: 2, name: "Silver Mind", description: "Complete 5x 30-Min Focus Sessions", xp: 250, completed: false, condition: () => false },
-    { id: 3, name: "Brain of Steel", description: "Focus for 3 hours in a day", xp: 1000, completed: false, condition: () => false }
+    { id: 1, name: "First Victory", description: "Focus for 10 minutes", xp: 100, completed: false, condition: () => stopwatchTime >= 60000 },
+    { id: 2, name: "Silver Mind", description: "Complete 5x 30-Min Focus Sessions", xp: 250, completed: false, condition: () => completedQuests.filter(q => q.duration >= 1800000).length >= 5 },
+    { id: 3, name: "Brain of Steel", description: "Focus for 3 hours in a day", xp: 1000, completed: false, condition: () => completedQuests.reduce((acc, q) => acc + q.duration, 0) >= 10800000 },
+    { id: 4, name: "Gold Hoarder", description: "Accumulate 1000 gold", xp: 500, completed: false, condition: () => gold >= 1000 },
+    { id: 5, name: "Quest Master", description: "Complete 50 quests", xp: 750, completed: false, condition: () => completedQuests.length >= 50 },
+    { id: 6, name: "Speed Runner", description: "Complete a quest in under 5 minutes", xp: 200, completed: false, condition: () => completedQuests.some(q => q.duration < 300000) }
 ];
 
 // Rank system based on level
@@ -37,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('close-modal').addEventListener('click', () => {
         document.getElementById('level-up-modal').style.display = 'none';
     });
-    // Add these reset button event listeners
     document.getElementById('reset-game-btn').addEventListener('click', showResetModal);
     document.getElementById('cancel-reset-btn').addEventListener('click', hideResetModal);
     document.getElementById('confirm-reset-btn').addEventListener('click', attemptGameReset);
@@ -247,9 +249,9 @@ function startStopwatch() {
     if (stopwatchInterval) clearInterval(stopwatchInterval);
     // Update the stopwatch display four times per second
     stopwatchInterval = setInterval(() => {
-        stopwatchTime = Math.floor((Date.now() - stopwatchStart) / 1000);
+        stopwatchTime = Date.now() - stopwatchStart;
         updateStopwatchDisplay();
-    }, 250);
+    }, 10);
 }
 
 // Replace stopStopwatch with this implementation
@@ -258,28 +260,30 @@ function stopStopwatch() {
         clearInterval(stopwatchInterval);
         stopwatchInterval = null;
         // Final update in case there's any lag
-        stopwatchTime = Math.floor((Date.now() - stopwatchStart) / 1000);
+        stopwatchTime = Date.now() - stopwatchStart;
         updateStopwatchDisplay();
     }
 }
 
 // Update the stopwatch display
 function updateStopwatchDisplay() {
-    const hours = Math.floor(stopwatchTime / 3600);
-    const minutes = Math.floor((stopwatchTime % 3600) / 60);
-    const seconds = stopwatchTime % 60;
+    const hours = Math.floor(stopwatchTime / 3600000);
+    const minutes = Math.floor((stopwatchTime % 3600000) / 60000);
+    const seconds = Math.floor((stopwatchTime % 60000) / 1000);
+    const centiseconds = Math.floor((stopwatchTime % 1000) / 10);
     
-    const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(centiseconds).padStart(2, '0')}`;
     document.getElementById('stopwatch').innerText = display;
 }
 
-// Format time in seconds to HH:MM:SS
-function formatTime(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+// Format time in milliseconds to HH:MM:SS:CC
+function formatTime(milliseconds) {
+    const hours = Math.floor(milliseconds / 3600000);
+    const minutes = Math.floor((milliseconds % 3600000) / 60000);
+    const seconds = Math.floor((milliseconds % 60000) / 1000);
+    const centiseconds = Math.floor((milliseconds % 1000) / 10);
     
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(centiseconds).padStart(2, '0')}`;
 }
 
 // Complete the active quest
@@ -330,10 +334,10 @@ function completeActiveQuest() {
 
 // Calculate bonus multiplier based on focus duration
 function calculateBonusMultiplier(duration) {
-    if (duration < 60) return 1; // Less than 1 minute
-    if (duration < 300) return 1.2; // 1-5 minutes
-    if (duration < 1800) return 1.5; // 5-30 minutes
-    if (duration < 3600) return 1.8; // 30-60 minutes
+    if (duration < 60000) return 1; // Less than 1 minute
+    if (duration < 300000) return 1.2; // 1-5 minutes
+    if (duration < 1800000) return 1.5; // 5-30 minutes
+    if (duration < 3600000) return 1.8; // 30-60 minutes
     return 2; // More than 60 minutes
 }
 
@@ -470,8 +474,13 @@ function resetGameData() {
 
 // Check for unlocked achievements
 function checkAchievements() {
-    // Implement achievement checking logic here
-    // This will check conditions like "completed 5 quests" etc.
+    achievements.forEach(achievement => {
+        if (!achievement.completed && achievement.condition()) {
+            achievement.completed = true;
+            alert(`Achievement Unlocked: ${achievement.name} - ${achievement.description}`);
+            gainXP(achievement.xp);
+        }
+    });
 }
 
 // Play level up sound
