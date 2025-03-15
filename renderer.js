@@ -9,6 +9,7 @@ let stopwatchTime = 0;
 let stopwatchStart = 0;
 let completedQuests = [];
 let xpToNextLevel = 500;
+let rewards = [];
 let achievements = [
     { id: 1, name: "First Victory", description: "Focus for 10 minutes", xp: 100, completed: false, condition: () => stopwatchTime >= 60000 },
     { id: 2, name: "Silver Mind", description: "Complete 5x 30-Min Focus Sessions", xp: 250, completed: false, condition: () => completedQuests.filter(q => q.duration >= 1800000).length >= 5 },
@@ -42,6 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reset-game-btn').addEventListener('click', showResetModal);
     document.getElementById('cancel-reset-btn').addEventListener('click', hideResetModal);
     document.getElementById('confirm-reset-btn').addEventListener('click', attemptGameReset);
+    // Set up filter listeners
+    document.getElementById('month-filter').addEventListener('change', renderQuestHistory);
+    document.getElementById('duration-filter').addEventListener('change', renderQuestHistory);
+    //rewards
+    document.getElementById('add-reward-btn').addEventListener('click', addReward);
+    document.getElementById('close-redeem-modal').addEventListener('click', () => {
+        document.getElementById('redeem-modal').style.display = 'none';
+    });
+    //render rewards
+    renderRewardsList();
     
     // Update UI with initial values
     updateUI();
@@ -50,7 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeUI() {
     // Load saved state if available
     loadGameState();
-    
+    populateMonthFilter();
+    renderRewardsList();
     // Initial UI update
     updateUI();
 }
@@ -75,18 +87,25 @@ function loadGameState() {
     const savedState = localStorage.getItem('focusRPG_gameState');
     
     if (savedState) {
-        const gameState = JSON.parse(savedState);
-        xp = gameState.xp || 0;
-        level = gameState.level || 1;
-        gold = gameState.gold || 0;
-        quests = gameState.quests || [];
-        completedQuests = gameState.completedQuests || [];
-        achievements = gameState.achievements || achievements;
-        xpToNextLevel = gameState.xpToNextLevel || 500;
+        const parsedState = JSON.parse(savedState);
         
-        // Render quests
-        renderQuestsList();
-        renderQuestHistory();
+        // Load primitive values
+        xp = parsedState.xp || 0;
+        level = parsedState.level || 1;
+        gold = parsedState.gold || 0;
+        quests = parsedState.quests || [];
+        completedQuests = parsedState.completedQuests || [];
+        xpToNextLevel = parsedState.xpToNextLevel || 500;
+        
+        // Restore achievement conditions which are lost during JSON serialization
+        if (parsedState.achievements) {
+            // Update completion status but keep the original condition functions
+            achievements.forEach((achievement, index) => {
+                if (parsedState.achievements[index]) {
+                    achievement.completed = parsedState.achievements[index].completed || false;
+                }
+            });
+        }
     }
 }
 
@@ -448,6 +467,7 @@ function resetGameData() {
     stopwatchTime = 0;
     completedQuests = [];
     xpToNextLevel = 500;
+    rewards= [];
     
     // Reset achievements
     achievements.forEach(achievement => {
@@ -465,6 +485,7 @@ function resetGameData() {
     saveGameState();
     
     // Update UI
+    renderRewardsList();
     updateStopwatchDisplay();
     renderQuestsList();
     renderQuestHistory();
@@ -472,15 +493,246 @@ function resetGameData() {
 }
 
 // Check for unlocked achievements
+// Update your checkAchievements function to be more defensive
 function checkAchievements() {
     achievements.forEach(achievement => {
-        if (!achievement.completed && achievement.condition()) {
-            achievement.completed = true;
-            alert(`Achievement Unlocked: ${achievement.name} - ${achievement.description}`);
-            gainXP(achievement.xp);
+        if (!achievement.completed && typeof achievement.condition === 'function') {
+            if (achievement.condition()) {
+                achievement.completed = true;
+                gainXP(achievement.xp);
+                
+                // Show notification
+                console.log(`Achievement unlocked: ${achievement.name}`);
+            }
         }
     });
 }
+
+// Update your renderQuestHistory function to include filtering
+function renderQuestHistory() {
+    const historyList = document.getElementById('history-list');
+    historyList.innerHTML = '';
+    
+    // Get filter values
+    const monthFilter = document.getElementById('month-filter').value;
+    const durationFilter = document.getElementById('duration-filter').value;
+    
+    // Populate month filter if needed
+    populateMonthFilter();
+    
+    if (completedQuests.length === 0) {
+        historyList.innerHTML = '<div class="empty-state">No completed quests yet. Finish a quest to see its history here!</div>';
+        return;
+    }
+    
+    // Apply filters
+    let filteredQuests = [...completedQuests];
+    
+    // Filter by month
+    if (monthFilter !== 'all') {
+        const [year, month] = monthFilter.split('-');
+        filteredQuests = filteredQuests.filter(quest => {
+            const questDate = new Date(quest.completedTime);
+            return questDate.getFullYear() === parseInt(year) && 
+                   questDate.getMonth() === parseInt(month) - 1;
+        });
+    }
+    
+    // Filter by duration
+    if (durationFilter !== 'all') {
+        filteredQuests = filteredQuests.filter(quest => {
+            const duration = quest.duration;
+            switch(durationFilter) {
+                case 'short': return duration < 300000; // Less than 5 minutes
+                case 'medium': return duration >= 300000 && duration < 1800000; // 5-30 minutes
+                case 'long': return duration >= 1800000 && duration < 3600000; // 30-60 minutes
+                case 'extended': return duration >= 3600000; // More than 60 minutes
+                default: return true;
+            }
+        });
+    }
+    
+    // Sort by most recent first
+    const sortedQuests = filteredQuests.sort((a, b) => b.completedTime - a.completedTime);
+    
+    // Show empty state if no quests match filters
+    if (sortedQuests.length === 0) {
+        historyList.innerHTML = '<div class="empty-state">No quests match your filter criteria</div>';
+        return;
+    }
+    
+    // Render the filtered quests
+    sortedQuests.forEach(quest => {
+        const formattedTime = formatTime(quest.duration);
+        const questDate = new Date(quest.completedTime).toLocaleDateString();
+        
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.innerHTML = `
+            <div>
+                <div class="history-quest-name">${quest.name}</div>
+                <div class="history-date">${questDate}</div>
+            </div>
+            <div class="history-details">
+                <span class="history-duration">${formattedTime}</span>
+                <span class="history-xp">+${quest.xpReward} XP</span>
+            </div>
+        `;
+        
+        historyList.appendChild(historyItem);
+    });
+}
+
+function populateMonthFilter() {
+    const monthFilter = document.getElementById('month-filter');
+    const currentValue = monthFilter.value;
+    
+    // Keep the "All time" option
+    monthFilter.innerHTML = '<option value="all">All time</option>';
+    
+    if (completedQuests.length === 0) return;
+    
+    // Get unique year-month combinations from completed quests
+    const uniqueMonths = new Set();
+    
+    completedQuests.forEach(quest => {
+        const date = new Date(quest.completedTime);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1; // JavaScript months are 0-indexed
+        uniqueMonths.add(`${year}-${month}`);
+    });
+    
+    // Sort months in descending order (newest first)
+    const sortedMonths = Array.from(uniqueMonths).sort().reverse();
+    
+    // Add month options to the filter
+    sortedMonths.forEach(yearMonth => {
+        const [year, month] = yearMonth.split('-');
+        const date = new Date(year, month - 1);
+        const monthName = date.toLocaleString('default', { month: 'long' });
+        const option = document.createElement('option');
+        option.value = yearMonth;
+        option.textContent = `${monthName} ${year}`;
+        monthFilter.appendChild(option);
+    });
+    
+    // Try to restore the previously selected value
+    if (currentValue !== 'all') {
+        monthFilter.value = currentValue;
+        // If the value doesn't exist anymore, default to "all"
+        if (monthFilter.value !== currentValue) {
+            monthFilter.value = 'all';
+        }
+    }
+}
+
+function addReward() {
+    const rewardNameInput = document.getElementById('reward-name');
+    const rewardPriceInput = document.getElementById('reward-price');
+    
+    const rewardName = rewardNameInput.value.trim();
+    const rewardPrice = parseInt(rewardPriceInput.value);
+    
+    if (rewardName && rewardPrice && rewardPrice > 0) {
+        const reward = {
+            id: Date.now(),
+            name: rewardName,
+            price: rewardPrice,
+            timeAdded: new Date()
+        };
+        
+        rewards.push(reward);
+        rewardNameInput.value = '';
+        rewardPriceInput.value = '50';
+        
+        renderRewardsList();
+        saveGameState();
+    }
+}
+
+function renderRewardsList() {
+    const rewardsList = document.getElementById('rewards-list');
+    rewardsList.innerHTML = '';
+    
+    if (rewards.length === 0) {
+        rewardsList.innerHTML = '<div class="empty-rewards">No rewards yet. Create some rewards to spend your gold on!</div>';
+        return;
+    }
+    
+    rewards.forEach(reward => {
+        const rewardElement = document.createElement('div');
+        rewardElement.className = 'reward-item';
+        
+        // Check if user has enough gold
+        const canAfford = gold >= reward.price;
+        
+        rewardElement.innerHTML = `
+            <div class="reward-name">${reward.name}</div>
+            <div class="reward-price">${reward.price} 💰</div>
+            <div class="reward-actions">
+                <button class="redeem-btn" data-reward-id="${reward.id}" ${!canAfford ? 'disabled' : ''}>
+                    ${canAfford ? '<i class="fas fa-shopping-cart"></i> Redeem' : '<i class="fas fa-lock"></i> Not enough'}
+                </button>
+                <button class="delete-reward-btn" data-reward-id="${reward.id}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        rewardsList.appendChild(rewardElement);
+    });
+    
+    // Add event listeners to redeem buttons
+    document.querySelectorAll('.redeem-btn').forEach(button => {
+        if (!button.disabled) {
+            button.addEventListener('click', (e) => {
+                const rewardId = parseInt(e.currentTarget.getAttribute('data-reward-id'));
+                redeemReward(rewardId);
+            });
+        }
+    });
+    
+    // Add event listeners to delete buttons
+    document.querySelectorAll('.delete-reward-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const rewardId = parseInt(e.currentTarget.getAttribute('data-reward-id'));
+            deleteReward(rewardId);
+        });
+    });
+}
+
+// Add function to delete a reward
+function deleteReward(rewardId) {
+    if (confirm('Are you sure you want to delete this reward?')) {
+        rewards = rewards.filter(reward => reward.id !== rewardId);
+        renderRewardsList();
+        saveGameState();
+    }
+}
+
+// Update redeemReward to remove the reward after redeeming
+function redeemReward(rewardId) {
+    // Find the reward by ID
+    const reward = rewards.find(r => r.id === rewardId);
+    
+    if (reward && gold >= reward.price) {
+        // Deduct the price from gold
+        gold -= reward.price;
+        
+        // Show the redemption modal
+        document.getElementById('redeemed-reward').textContent = reward.name;
+        document.getElementById('redeem-modal').style.display = 'flex';
+        
+        // Remove the reward after redeeming
+        rewards = rewards.filter(r => r.id !== rewardId);
+        
+        // Update UI
+        updateUI();
+        renderRewardsList();
+        saveGameState();
+    }
+}
+
 
 // Play level up sound
 function playLevelUpSound() {

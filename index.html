@@ -73,6 +73,28 @@
         
         <div class="history-panel">
             <h2><i class="fas fa-scroll"></i> Quest History</h2>
+
+            <!-- filter options -->
+            <div class="history-filters">
+                <div class="filter-group">
+                    <label for="month-filter">Filter by date:</label>
+                    <select id="month-filter">
+                        <option value="all">All time</option>
+                        <!-- Month options will be added dynamically -->
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="duration-filter">Filter by duration:</label>
+                    <select id="duration-filter">
+                        <option value="all">All durations</option>
+                        <option value="short">Short (less than 5 min)</option>
+                        <option value="medium">Medium (5-30 min)</option>
+                        <option value="long">Long (30-60 min)</option>
+                        <option value="extended">Extended (> 60 min)</option>
+                    </select>
+                </div>
+            </div>
             <div class="history-list" id="history-list">
                 <!-- Completed quests will be shown here -->
             </div>
@@ -90,6 +112,41 @@
             <button id="close-modal"><i class="fas fa-arrow-right"></i> Continue</button>
         </div>
     </div>
+
+    <div class="shop-panel">
+        <h2><i class="fas fa-store"></i> Gold Shop</h2>
+        <div class="shop-description">
+            <p>Create your own rewards to spend your hard-earned gold on!</p>
+        </div>
+    
+        <div class="add-reward">
+            <input type="text" id="reward-name" placeholder="Reward name (e.g. 'Play video games for 30 min')">
+            <div class="reward-price-group">
+                <input type="number" id="reward-price" placeholder="Gold cost" min="1" value="50">
+                <button id="add-reward-btn"><i class="fas fa-plus"></i> Add Reward</button>
+            </div>
+        </div>
+    
+        <div class="rewards-container">
+            <h3>Available Rewards</h3>
+            <div class="rewards-list" id="rewards-list">
+                <!-- Rewards will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add this modal before the closing body tag -->
+    <div id="redeem-modal" class="modal">
+        <div class="modal-content">
+            <h2>🎉 Reward Redeemed!</h2>
+            <div class="reward-celebration">🎁</div>
+            <p>You've redeemed:</p>
+            <p id="redeemed-reward" class="redeemed-reward-name"></p>
+            <div class="modal-buttons">
+                <button id="close-redeem-modal"><i class="fas fa-check"></i> Awesome!</button>
+            </div>
+        </div>
+    </div>
         
     <div id="reset-modal" class="modal">
         <div class="modal-content">
@@ -103,7 +160,6 @@
             </div>
         </div>
     </div>
-
-    <script src="./renderer.js"></script>
+<script src="renderer.js"></script>
 </body>
 </html>

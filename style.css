@@ -608,3 +608,324 @@ button:active::after {
 .achievements-panel:hover::before, .history-panel:hover::before, .settings-panel:hover::before {
     height: 100px;
 }
+
+/* History filters */
+.history-filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.filter-group select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    background-color: white;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    min-width: 150px;
+    cursor: pointer;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(151, 193, 169, 0.2);
+}
+
+@media (max-width: 768px) {
+    .history-filters {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+/* Add this at the end of the file */
+
+/* Updated Shop Panel Styling */
+.shop-panel {
+    background: linear-gradient(to bottom, var(--card-bg), var(--card-bg), rgba(232, 188, 156, 0.05));
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    border: 1px solid rgba(232, 188, 156, 0.2);
+    margin-top: 40px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.shop-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to right, var(--secondary-color), transparent);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.shop-panel:hover {
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+}
+
+.shop-panel h2 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.shop-panel h2 i {
+    color: var(--secondary-color);
+    font-size: 1.6rem;
+    margin-right: 10px;
+}
+
+.shop-description {
+    margin-bottom: 25px;
+    color: var(--text-secondary);
+    font-size: 1rem;
+    background-color: rgba(232, 188, 156, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--secondary-color);
+}
+
+.add-reward {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+    gap: 15px;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.reward-price-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+#reward-name {
+    width: 100%;
+    border: 1px solid rgba(232, 188, 156, 0.3);
+    transition: all 0.2s;
+}
+
+#reward-name:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(232, 188, 156, 0.2);
+}
+
+#reward-price {
+    width: 130px;
+    border: 1px solid rgba(232, 188, 156, 0.3);
+    transition: all 0.2s;
+}
+
+#reward-price:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(232, 188, 156, 0.2);
+}
+
+#add-reward-btn {
+    background: var(--secondary-color);
+    color: var(--text-color);
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+#add-reward-btn:hover {
+    background-color: #f0c7a8;
+    transform: translateY(-2px);
+}
+
+.rewards-container h3 {
+    margin-top: 25px;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(232, 188, 156, 0.3);
+    position: relative;
+}
+
+.rewards-container h3::after {
+    content: '🎁';
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-size: 1.3rem;
+}
+
+.rewards-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.reward-item {
+    background: linear-gradient(145deg, white, rgba(255,255,255,0.9));
+    padding: 20px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+.reward-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, var(--secondary-color), transparent);
+}
+
+.reward-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+}
+
+.reward-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: var(--text-color);
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
+    padding-bottom: 10px;
+}
+
+.reward-price {
+    color: var(--accent-color);
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reward-price::before {
+    content: '💰';
+    font-size: 1.3rem;
+}
+
+.reward-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+}
+
+.redeem-btn {
+    flex: 1;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    padding: 10px 15px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.redeem-btn:hover {
+    background-color: #f0c7a8;
+    transform: translateY(-2px);
+}
+
+.redeem-btn:disabled {
+    background-color: #e5e5e5;
+    cursor: not-allowed;
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none;
+    color: #999;
+}
+
+.delete-reward-btn {
+    background-color: rgba(244, 67, 54, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.delete-reward-btn:hover {
+    background-color: #f44336;
+    transform: translateY(-2px);
+}
+
+/* Redeem confirmation modal */
+#redeem-modal .modal-content {
+    max-width: 400px;
+    text-align: center;
+    background: linear-gradient(145deg, white, rgba(255,255,255,0.97));
+    border: 1px solid rgba(232, 188, 156, 0.3);
+}
+
+#redeem-modal .reward-celebration {
+    font-size: 4rem;
+    margin: 20px 0;
+    animation: bounce 0.5s ease infinite alternate;
+}
+
+@keyframes bounce {
+    from { transform: translateY(0); }
+    to { transform: translateY(-10px); }
+}
+
+#redeem-modal .redeemed-reward-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 15px 0;
+    padding: 10px 20px;
+    background-color: rgba(232, 188, 156, 0.2);
+    border-radius: 8px;
+    display: inline-block;
+}
+
+/* Empty state for rewards */
+.empty-rewards {
+    padding: 40px 25px;
+    text-align: center;
+    color: var(--text-secondary);
+    border: 2px dashed rgba(232, 188, 156, 0.3);
+    border-radius: 12px;
+    font-size: 1rem;
+    grid-column: 1 / -1;
+    background-color: rgba(232, 188, 156, 0.05);
+}
+
+.empty-rewards::before {
+    content: '🎁';
+    display: block;
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    opacity: 0.7;
+}
