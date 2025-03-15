@@ -9,9 +9,10 @@
   },
   "build": {
     "appId": "com.yourdomain.focusrpg",
-    "productName": "Focus RPG",
+    "productName": "AlphaFocus",
     "mac": {
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "icon": "focusRpgLogo.png"
     },
     "files": [
       "**/*",
