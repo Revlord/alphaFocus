@@ -29,7 +29,6 @@ const ranks = [
     { level: 50, name: "GigaBrain Master 🧠🔥", maxLevel: 999 }
 ];
 
-// DOM Elements
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize the UI when the DOM is fully loaded
     initializeUI();
@@ -47,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update UI with initial values
     updateUI();
 });
-
 // Initialize UI elements
 function initializeUI() {
     // Load saved state if available
@@ -210,17 +208,6 @@ function startQuest(questId) {
         }
         stopStopwatch();
         activeQuest = null;
-        if (quest) {
-            activeQuest = { ...quest, startTime: new Date() };
-            
-            // Update UI to show active quest
-            document.getElementById('no-active-quest').classList.add('hidden');
-            document.getElementById('quest-details').classList.remove('hidden');
-            document.getElementById('active-quest-name').innerText = quest.name;
-    
-            // Start the stopwatch
-            startStopwatch();
-        }
     }
     
     // Find the quest by ID
@@ -240,6 +227,7 @@ function startQuest(questId) {
         startStopwatch();
     }
 }
+
 
 // Replace startStopwatch with this implementation
 function startStopwatch() {
@@ -266,6 +254,7 @@ function stopStopwatch() {
 }
 
 // Update the stopwatch display
+// Update the stopwatch display
 function updateStopwatchDisplay() {
     const hours = Math.floor(stopwatchTime / 3600000);
     const minutes = Math.floor((stopwatchTime % 3600000) / 60000);
@@ -274,6 +263,16 @@ function updateStopwatchDisplay() {
     
     const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(centiseconds).padStart(2, '0')}`;
     document.getElementById('stopwatch').innerText = display;
+}
+
+// Format time in milliseconds to HH:MM:SS:CC
+function formatTime(milliseconds) {
+    const hours = Math.floor(milliseconds / 3600000);
+    const minutes = Math.floor((milliseconds % 3600000) / 60000);
+    const seconds = Math.floor((milliseconds % 60000) / 1000);
+    const centiseconds = Math.floor((milliseconds % 1000) / 10);
+    
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(centiseconds).padStart(2, '0')}`;
 }
 
 // Format time in milliseconds to HH:MM:SS:CC
