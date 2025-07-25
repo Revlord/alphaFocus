@@ -70,6 +70,59 @@
                 </ul>
             </div>
         </div>
+
+        <!-- Habit Tracking Panel -->
+        <div class="habit-tracking-panel">
+            <h2><i class="fas fa-calendar-check"></i> Habit Tracking</h2>
+            <div class="habit-description">
+                <p>Build consistency and earn XP by tracking your daily habits! 🌟</p>
+            </div>
+
+            <div class="add-habit">
+                <input type="text" id="habit-name" placeholder="Habit name (e.g. 'Drink 8 glasses of water')">
+                <div class="habit-details-group">
+                    <select id="habit-difficulty">
+                        <option value="easy">Easy (+5 XP) 🟢</option>
+                        <option value="medium" selected>Medium (+10 XP) 🟡</option>
+                        <option value="hard">Hard (+20 XP) 🔴</option>
+                        <option value="extreme">Extreme (+35 XP) 🟣</option>
+                    </select>
+                    <select id="habit-frequency">
+                        <option value="daily" selected>Daily</option>
+                        <option value="weekdays">Weekdays Only</option>
+                        <option value="weekends">Weekends Only</option>
+                        <option value="custom">Custom Days</option>
+                    </select>
+                    <button id="add-habit-btn"><i class="fas fa-plus"></i> Add Habit</button>
+                </div>
+            </div>
+
+            <div class="custom-days-selector hidden" id="custom-days-selector">
+                <label>Select Days:</label>
+                <div class="days-checkboxes">
+                    <label><input type="checkbox" value="0"> Sun</label>
+                    <label><input type="checkbox" value="1"> Mon</label>
+                    <label><input type="checkbox" value="2"> Tue</label>
+                    <label><input type="checkbox" value="3"> Wed</label>
+                    <label><input type="checkbox" value="4"> Thu</label>
+                    <label><input type="checkbox" value="5"> Fri</label>
+                    <label><input type="checkbox" value="6"> Sat</label>
+                </div>
+            </div>
+
+            <div class="habit-filters">
+                <button class="filter-btn active" data-filter="all">All Habits</button>
+                <button class="filter-btn" data-filter="active">Active Today</button>
+                <button class="filter-btn" data-filter="completed">Completed Today</button>
+                <button class="filter-btn" data-filter="streak">Best Streaks</button>
+            </div>
+
+            <div class="habits-container">
+                <div class="habits-list" id="habits-list">
+                    <!-- Habits will be added here dynamically -->
+                </div>
+            </div>
+        </div>
         
         <div class="history-panel">
             <h2><i class="fas fa-scroll"></i> Quest History</h2>
@@ -160,6 +213,20 @@
             </div>
         </div>
     </div>
+
+    <div id="streak-modal" class="modal">
+        <div class="modal-content">
+            <h2>🔥 STREAK MILESTONE! 🔥</h2>
+            <div class="streak-celebration">⚡</div>
+            <p>You've achieved a <span id="streak-days">7</span>-day streak with:</p>
+            <p id="streak-habit" class="streak-habit-name"></p>
+            <p>Bonus XP awarded: <span id="streak-bonus">+50 XP</span></p>
+            <div class="modal-buttons">
+                <button id="close-streak-modal"><i class="fas fa-fire"></i> Keep Going!</button>
+            </div>
+        </div>
+    </div>
+    
 <script src="renderer.js"></script>
 </body>
 </html>

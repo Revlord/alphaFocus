@@ -9,14 +9,21 @@ let stopwatchTime = 0;
 let stopwatchStart = 0;
 let completedQuests = [];
 let xpToNextLevel = 500;
-let rewards = [];
+let habits = [];
+let habitHistory = {}; // Will store completion data by date
 let achievements = [
     { id: 1, name: "First Victory", description: "Focus for 10 minutes", xp: 100, completed: false, condition: () => stopwatchTime >= 60000 },
     { id: 2, name: "Silver Mind", description: "Complete 5x 30-Min Focus Sessions", xp: 250, completed: false, condition: () => completedQuests.filter(q => q.duration >= 1800000).length >= 5 },
     { id: 3, name: "Brain of Steel", description: "Focus for 3 hours in a day", xp: 1000, completed: false, condition: () => completedQuests.reduce((acc, q) => acc + q.duration, 0) >= 10800000 },
     { id: 4, name: "Gold Hoarder", description: "Accumulate 1000 gold", xp: 500, completed: false, condition: () => gold >= 1000 },
     { id: 5, name: "Quest Master", description: "Complete 50 quests", xp: 750, completed: false, condition: () => completedQuests.length >= 50 },
-    { id: 6, name: "Speed Runner", description: "Complete a quest in under 5 minutes", xp: 200, completed: false, condition: () => completedQuests.some(q => q.duration < 300000) }
+    { id: 6, name: "Speed Runner", description: "Complete a quest in under 5 minutes", xp: 200, completed: false, condition: () => completedQuests.some(q => q.duration < 300000) },
+    // New habit-related achievements
+    { id: 7, name: "Habit Starter", description: "Create your first habit", xp: 50, completed: false, condition: () => habits.length >= 1 },
+    { id: 8, name: "Streak Warrior", description: "Maintain a 7-day streak", xp: 300, completed: false, condition: () => habits.some(h => getHabitStreak(h.id) >= 7) },
+    { id: 9, name: "Consistency King", description: "Maintain a 30-day streak", xp: 1000, completed: false, condition: () => habits.some(h => getHabitStreak(h.id) >= 30) },
+    { id: 10, name: "Multi-Master", description: "Complete 5 different habits in one day", xp: 500, completed: false, condition: () => checkMultiHabitDay() },
+    { id: 11, name: "Century Club", description: "Achieve a 100-day streak", xp: 2000, completed: false, condition: () => habits.some(h => getHabitStreak(h.id) >= 100) }
 ];
 
 // Rank system based on level
@@ -51,20 +58,42 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('close-redeem-modal').addEventListener('click', () => {
         document.getElementById('redeem-modal').style.display = 'none';
     });
-    //render rewards
-    renderRewardsList();
+    // Add habit tracking event listeners
+    document.getElementById('add-habit-btn').addEventListener('click', addHabit);
+    document.getElementById('habit-frequency').addEventListener('change', toggleCustomDays);
+    document.getElementById('close-streak-modal').addEventListener('click', () => {
+        document.getElementById('streak-modal').style.display = 'none';
+    });
     
-    // Update UI with initial values
-    updateUI();
+    // Add filter button listeners
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            renderHabitsList(e.target.dataset.filter);
+        });
+    });
 });
 // Initialize UI elements
 function initializeUI() {
     // Load saved state if available
     loadGameState();
-    populateMonthFilter();
+
+    //render everything
+    renderQuestsList();
+    renderQuestHistory();
     renderRewardsList();
-    // Initial UI update
+    renderHabitsList();
+    populateMonthFilter();
+
     updateUI();
+
+    setTimeout(() => {
+        renderQuestsList();
+        renderRewardsList();
+        renderHabitsList();
+        updateUI();
+    }, 100);
 }
 
 // Save game state to localStorage
@@ -76,7 +105,10 @@ function saveGameState() {
         quests,
         completedQuests,
         achievements,
-        xpToNextLevel
+        xpToNextLevel,
+        rewards,
+        habits,
+        habitHistory
     };
     
     localStorage.setItem('focusRPG_gameState', JSON.stringify(gameState));
@@ -96,6 +128,9 @@ function loadGameState() {
         quests = parsedState.quests || [];
         completedQuests = parsedState.completedQuests || [];
         xpToNextLevel = parsedState.xpToNextLevel || 500;
+        rewards = parsedState.rewards || [];
+        habits = parsedState.habits || [];
+        habitHistory = parsedState.habitHistory || {};
         
         // Restore achievement conditions which are lost during JSON serialization
         if (parsedState.achievements) {
@@ -468,6 +503,8 @@ function resetGameData() {
     completedQuests = [];
     xpToNextLevel = 500;
     rewards= [];
+    habits = [];
+    habitHistory = {};
     
     // Reset achievements
     achievements.forEach(achievement => {
@@ -486,10 +523,462 @@ function resetGameData() {
     
     // Update UI
     renderRewardsList();
+    renderHabitsList();
     updateStopwatchDisplay();
     renderQuestsList();
     renderQuestHistory();
     updateUI();
+}
+
+// Add habit tracking functions
+function addHabit() {
+    const habitNameInput = document.getElementById('habit-name');
+    const difficultySelect = document.getElementById('habit-difficulty');
+    const frequencySelect = document.getElementById('habit-frequency');
+    
+    const habitName = habitNameInput.value.trim();
+    const difficulty = difficultySelect.value;
+    const frequency = frequencySelect.value;
+    
+    if (!habitName) {
+        alert('Please enter a habit name!');
+        return;
+    }
+    
+    let customDays = [];
+    if (frequency === 'custom') {
+        const checkboxes = document.querySelectorAll('.days-checkboxes input[type="checkbox"]:checked');
+        customDays = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        if (customDays.length === 0) {
+            alert('Please select at least one day for custom frequency!');
+            return;
+        }
+    }
+    
+    const xpRewards = {
+        easy: 5,
+        medium: 10,
+        hard: 20,
+        extreme: 35
+    };
+    
+    const habit = {
+        id: Date.now(),
+        name: habitName,
+        difficulty: difficulty,
+        xpReward: xpRewards[difficulty],
+        frequency: frequency,
+        customDays: customDays,
+        createdDate: new Date().toISOString().split('T')[0],
+        totalCompletions: 0
+    };
+    
+    habits.push(habit);
+    
+    // Clear form
+    habitNameInput.value = '';
+    difficultySelect.value = 'medium';
+    frequencySelect.value = 'daily';
+    document.getElementById('custom-days-selector').classList.add('hidden');
+    document.querySelectorAll('.days-checkboxes input[type="checkbox"]').forEach(cb => cb.checked = false);
+    
+    renderHabitsList();
+    saveGameState();
+    
+    // Show success message
+    showToast(`🎯 Habit "${habitName}" added! Start building your streak!`);
+}
+
+function toggleCustomDays() {
+    const frequency = document.getElementById('habit-frequency').value;
+    const customSelector = document.getElementById('custom-days-selector');
+    
+    if (frequency === 'custom') {
+        customSelector.classList.remove('hidden');
+    } else {
+        customSelector.classList.add('hidden');
+    }
+}
+
+function renderHabitsList(filter = 'all') {
+    const habitsList = document.getElementById('habits-list');
+    habitsList.innerHTML = '';
+    
+    if (habits.length === 0) {
+        habitsList.innerHTML = '<div class="empty-habits">No habits created yet. Add your first habit above!</div>';
+        return;
+    }
+    
+    let filteredHabits = [...habits];
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Apply filters
+    switch(filter) {
+        case 'active':
+            filteredHabits = habits.filter(habit => 
+                isHabitActiveToday(habit) && !isHabitCompletedToday(habit.id)
+            );
+            break;
+        case 'completed':
+            filteredHabits = habits.filter(habit => isHabitCompletedToday(habit.id));
+            break;
+        case 'streak':
+            filteredHabits = habits.sort((a, b) => getHabitStreak(b.id) - getHabitStreak(a.id));
+            break;
+    }
+    
+    if (filteredHabits.length === 0) {
+        const filterMessages = {
+            active: 'No active habits for today!',
+            completed: 'No habits completed today yet!',
+            streak: 'No habits with streaks yet!'
+        };
+        habitsList.innerHTML = `<div class="empty-habits">${filterMessages[filter] || 'No habits found!'}</div>`;
+        return;
+    }
+    
+    filteredHabits.forEach(habit => {
+        const habitElement = createHabitElement(habit);
+        habitsList.appendChild(habitElement);
+    });
+}
+
+function createHabitElement(habit) {
+    const habitElement = document.createElement('div');
+    habitElement.className = 'habit-item';
+    
+    const isCompletedToday = isHabitCompletedToday(habit.id);
+    const isActiveToday = isHabitActiveToday(habit);
+    const currentStreak = getHabitStreak(habit.id);
+    
+    // Add special classes for visual effects
+    if (isCompletedToday) {
+        habitElement.classList.add('completed');
+    }
+    if (currentStreak >= 7) {
+        habitElement.classList.add('streak-fire');
+    }
+    
+    const frequencyText = getFrequencyText(habit);
+    const weeklyProgress = generateWeeklyProgress(habit.id);
+    
+    habitElement.innerHTML = `
+        <div class="habit-header">
+            <div class="habit-name">${habit.name}</div>
+            <div class="habit-difficulty ${habit.difficulty}">${habit.difficulty}</div>
+        </div>
+        
+        <div class="habit-streak">
+            <span class="streak-flame">🔥</span>
+            <span class="streak-number">${currentStreak}</span>
+            <span class="streak-text">day streak</span>
+        </div>
+        
+        <div class="habit-frequency">
+            <i class="fas fa-calendar"></i>
+            ${frequencyText}
+        </div>
+        
+        <div class="habit-progress">
+            <div class="progress-text">
+                <span>This week</span>
+                <span>${getWeeklyCompletionCount(habit.id)}/7</span>
+            </div>
+            <div class="weekly-progress">
+                ${weeklyProgress}
+            </div>
+        </div>
+        
+        <div class="habit-actions">
+            <button class="complete-habit-btn ${isCompletedToday ? 'completed' : ''}" 
+                    data-habit-id="${habit.id}" 
+                    ${!isActiveToday || isCompletedToday ? 'disabled' : ''}>
+                ${isCompletedToday ? 
+                    '<i class="fas fa-check"></i> Completed!' : 
+                    `<i class="fas fa-plus"></i> Complete (+${habit.xpReward} XP)`}
+            </button>
+            <button class="delete-habit-btn" data-habit-id="${habit.id}">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    // Add event listeners
+    const completeBtn = habitElement.querySelector('.complete-habit-btn');
+    const deleteBtn = habitElement.querySelector('.delete-habit-btn');
+    
+    if (!completeBtn.disabled) {
+        completeBtn.addEventListener('click', () => completeHabit(habit.id));
+    }
+    
+    deleteBtn.addEventListener('click', () => deleteHabit(habit.id));
+    
+    return habitElement;
+}
+
+function completeHabit(habitId) {
+    const habit = habits.find(h => h.id === habitId);
+    if (!habit || isHabitCompletedToday(habitId)) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Initialize habit history if needed
+    if (!habitHistory[habitId]) {
+        habitHistory[habitId] = {};
+    }
+    
+    // Mark as completed today
+    habitHistory[habitId][today] = true;
+    habit.totalCompletions++;
+    
+    // Award XP and gold
+    const bonusMultiplier = calculateStreakBonus(habitId);
+    const earnedXP = Math.round(habit.xpReward * bonusMultiplier);
+    const earnedGold = Math.round(earnedXP / 15); // Less gold than quests
+    
+    gainXP(earnedXP);
+    gainGold(earnedGold);
+    
+    // Check for streak milestones
+    const newStreak = getHabitStreak(habitId);
+    checkStreakMilestones(habit, newStreak);
+    
+    // Re-render habits
+    renderHabitsList();
+    saveGameState();
+    
+    // Show completion message
+    showToast(`✅ ${habit.name} completed! +${earnedXP} XP, +${earnedGold} Gold`);
+}
+
+function deleteHabit(habitId) {
+    const habit = habits.find(h => h.id === habitId);
+    if (!habit) return;
+    
+    if (confirm(`Are you sure you want to delete "${habit.name}"? This will also delete all progress history.`)) {
+        habits = habits.filter(h => h.id !== habitId);
+        delete habitHistory[habitId];
+        renderHabitsList();
+        saveGameState();
+    }
+}
+
+function isHabitActiveToday(habit) {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 6 = Saturday
+    
+    switch(habit.frequency) {
+        case 'daily':
+            return true;
+        case 'weekdays':
+            return dayOfWeek >= 1 && dayOfWeek <= 5;
+        case 'weekends':
+            return dayOfWeek === 0 || dayOfWeek === 6;
+        case 'custom':
+            return habit.customDays.includes(dayOfWeek);
+        default:
+            return true;
+    }
+}
+
+function isHabitCompletedToday(habitId) {
+    const today = new Date().toISOString().split('T')[0];
+    return habitHistory[habitId] && habitHistory[habitId][today] === true;
+}
+
+function getHabitStreak(habitId) {
+    if (!habitHistory[habitId]) return 0;
+    
+    const habit = habits.find(h => h.id === habitId);
+    if (!habit) return 0;
+    
+    let streak = 0;
+    const today = new Date();
+    
+    // Check backwards from today
+    for (let i = 0; i < 365; i++) { // Max 1 year lookback
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() - i);
+        
+        // Create a habit object with the date to check if it should be active
+        const tempHabit = { ...habit };
+        const originalDate = new Date();
+        
+        // Temporarily set the date for checking
+        global.Date = class extends Date {
+            constructor(...args) {
+                if (args.length === 0) {
+                    super(checkDate);
+                } else {
+                    super(...args);
+                }
+            }
+            static now() {
+                return checkDate.getTime();
+            }
+        };
+        
+        const dateStr = checkDate.toISOString().split('T')[0];
+        const wasActiveOnDate = isHabitActiveonDate(habit, checkDate);
+        
+        // Restore original Date
+        global.Date = originalDate.constructor;
+        
+        if (wasActiveOnDate) {
+            if (habitHistory[habitId][dateStr]) {
+                streak++;
+            } else {
+                break; // Streak broken
+            }
+        }
+        // If habit wasn't active on this date, continue checking previous days
+    }
+    
+    return streak;
+}
+
+function isHabitActiveonDate(habit, date) {
+    const dayOfWeek = date.getDay();
+    
+    switch(habit.frequency) {
+        case 'daily':
+            return true;
+        case 'weekdays':
+            return dayOfWeek >= 1 && dayOfWeek <= 5;
+        case 'weekends':
+            return dayOfWeek === 0 || dayOfWeek === 6;
+        case 'custom':
+            return habit.customDays.includes(dayOfWeek);
+        default:
+            return true;
+    }
+}
+
+function calculateStreakBonus(habitId) {
+    const streak = getHabitStreak(habitId);
+    if (streak < 3) return 1;
+    if (streak < 7) return 1.2;
+    if (streak < 30) return 1.5;
+    if (streak < 100) return 2;
+    return 2.5; // Epic streak bonus
+}
+
+function checkStreakMilestones(habit, streak) {
+    const milestones = [7, 30, 50, 100, 365];
+    
+    if (milestones.includes(streak)) {
+        const bonusXP = streak * 2; // Bonus XP for milestones
+        gainXP(bonusXP);
+        
+        // Show streak modal
+        document.getElementById('streak-days').textContent = streak;
+        document.getElementById('streak-habit').textContent = habit.name;
+        document.getElementById('streak-bonus').textContent = `+${bonusXP} XP`;
+        document.getElementById('streak-modal').style.display = 'flex';
+    }
+}
+
+function getFrequencyText(habit) {
+    const freqMap = {
+        daily: 'Every day',
+        weekdays: 'Weekdays only',
+        weekends: 'Weekends only',
+        custom: `Custom days (${habit.customDays.map(d => ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d]).join(', ')})`
+    };
+    return freqMap[habit.frequency] || 'Daily';
+}
+
+function generateWeeklyProgress(habitId) {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday
+    
+    let progressHTML = '';
+    
+    for (let i = 0; i < 7; i++) {
+        const checkDate = new Date(startOfWeek);
+        checkDate.setDate(startOfWeek.getDate() + i);
+        const dateStr = checkDate.toISOString().split('T')[0];
+        
+        const isToday = dateStr === today.toISOString().split('T')[0];
+        const isCompleted = habitHistory[habitId] && habitHistory[habitId][dateStr];
+        
+        let classes = 'day-dot';
+        if (isCompleted) classes += ' completed';
+        if (isToday) classes += ' today';
+        
+        progressHTML += `<div class="${classes}" title="${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]}"></div>`;
+    }
+    
+    return progressHTML;
+}
+
+function getWeeklyCompletionCount(habitId) {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay()); // Sunday
+    
+    let count = 0;
+    for (let i = 0; i < 7; i++) {
+        const checkDate = new Date(startOfWeek);
+        checkDate.setDate(startOfWeek.getDate() + i);
+        const dateStr = checkDate.toISOString().split('T')[0];
+        
+        if (habitHistory[habitId] && habitHistory[habitId][dateStr]) {
+            count++;
+        }
+    }
+    
+    return count;
+}
+
+function checkMultiHabitDay() {
+    const today = new Date().toISOString().split('T')[0];
+    let completedToday = 0;
+    
+    habits.forEach(habit => {
+        if (isHabitCompletedToday(habit.id)) {
+            completedToday++;
+        }
+    });
+    
+    return completedToday >= 5;
+}
+
+function showToast(message) {
+    // Create a simple toast notification
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--primary-color);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        z-index: 1000;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Animate in
+    setTimeout(() => {
+        toast.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
 }
 
 // Check for unlocked achievements
