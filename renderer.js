@@ -8,34 +8,44 @@ let stopwatchInterval = null;
 let stopwatchTime = 0;
 let stopwatchStart = 0;
 let completedQuests = [];
-let xpToNextLevel = 500;
+let xpToNextLevel = 2500; // Increased from 500 to match higher XP scale
 let rewards = [];
 let habits = [];
 let habitHistory = {}; // Will store completion data by date
 let achievements = [
-    { id: 1, name: "First Victory", description: "Focus for 10 minutes", xp: 100, completed: false, condition: () => stopwatchTime >= 60000 },
-    { id: 2, name: "Silver Mind", description: "Complete 5x 30-Min Focus Sessions", xp: 250, completed: false, condition: () => completedQuests.filter(q => q.duration >= 1800000).length >= 5 },
-    { id: 3, name: "Brain of Steel", description: "Focus for 3 hours in a day", xp: 1000, completed: false, condition: () => completedQuests.reduce((acc, q) => acc + q.duration, 0) >= 10800000 },
-    { id: 4, name: "Gold Hoarder", description: "Accumulate 1000 gold", xp: 500, completed: false, condition: () => gold >= 1000 },
-    { id: 5, name: "Quest Master", description: "Complete 50 quests", xp: 750, completed: false, condition: () => completedQuests.length >= 50 },
-    { id: 6, name: "Speed Runner", description: "Complete a quest in under 5 minutes", xp: 200, completed: false, condition: () => completedQuests.some(q => q.duration < 300000) },
-    // New habit-related achievements
-    { id: 7, name: "Habit Starter", description: "Create your first habit", xp: 50, completed: false, condition: () => habits.length >= 1 },
-    { id: 8, name: "Streak Warrior", description: "Maintain a 7-day streak", xp: 300, completed: false, condition: () => habits.some(h => getHabitStreak(h.id) >= 7) },
-    { id: 9, name: "Consistency King", description: "Maintain a 30-day streak", xp: 1000, completed: false, condition: () => habits.some(h => getHabitStreak(h.id) >= 30) },
-    { id: 10, name: "Multi-Master", description: "Complete 5 different habits in one day", xp: 500, completed: false, condition: () => checkMultiHabitDay() },
-    { id: 11, name: "Century Club", description: "Achieve a 100-day streak", xp: 2000, completed: false, condition: () => habits.some(h => getHabitStreak(h.id) >= 100) }
+    { id: 1, name: "First Victory", description: "Focus for 10 minutes", xp: 500, completed: false, condition: () => stopwatchTime >= 60000 },
+    { id: 2, name: "Silver Mind", description: "Complete 5x 30-Min Focus Sessions", xp: 1250, completed: false, condition: () => completedQuests.filter(q => q.duration >= 1800000).length >= 5 },
+    { id: 3, name: "Brain of Steel", description: "Focus for 3 hours in a day", xp: 5000, completed: false, condition: () => completedQuests.reduce((acc, q) => acc + q.duration, 0) >= 10800000 },
+    { id: 4, name: "Gold Hoarder", description: "Accumulate 1000 gold", xp: 2500, completed: false, condition: () => gold >= 1000 },
+    { id: 5, name: "Quest Master", description: "Complete 50 quests", xp: 3750, completed: false, condition: () => completedQuests.length >= 50 },
+    { id: 6, name: "Speed Runner", description: "Complete a quest in under 5 minutes", xp: 1000, completed: false, condition: () => completedQuests.some(q => q.duration < 300000) },
+    // Habit-related achievements with updated XP
+    { id: 7, name: "Habit Starter", description: "Create your first habit", xp: 250, completed: false, condition: () => habits.length >= 1 },
+    { id: 8, name: "Streak Warrior", description: "Maintain a 7-day streak", xp: 1500, completed: false, condition: () => habits.some(h => getHabitStreak(h.id) >= 7) },
+    { id: 9, name: "Consistency King", description: "Maintain a 30-day streak", xp: 5000, completed: false, condition: () => habits.some(h => getHabitStreak(h.id) >= 30) },
+    { id: 10, name: "Multi-Master", description: "Complete 5 different habits in one day", xp: 2500, completed: false, condition: () => checkMultiHabitDay() },
+    { id: 11, name: "Century Club", description: "Achieve a 100-day streak", xp: 10000, completed: false, condition: () => habits.some(h => getHabitStreak(h.id) >= 100) }
 ];
 
-// Rank system based on level
+// New expanded rank system for longevity
 const ranks = [
-    { level: 1, name: "Goldfish Brain 🐠", maxLevel: 5 },
-    { level: 6, name: "Bronze Novice 🎖️", maxLevel: 10 },
-    { level: 11, name: "Silver Scholar 📜", maxLevel: 20 },
-    { level: 21, name: "Iron Warrior ⚔️", maxLevel: 30 },
-    { level: 31, name: "Diamond Monk 🧘‍♂️", maxLevel: 40 },
-    { level: 41, name: "Shadow Assassin 🥷", maxLevel: 49 },
-    { level: 50, name: "GigaBrain Master 🧠🔥", maxLevel: 999 }
+    { level: 1, name: "Neural Novice 🧠", maxLevel: 5 },
+    { level: 6, name: "Focus Foundling 🔍", maxLevel: 10 },
+    { level: 11, name: "Attention Adept 👁️", maxLevel: 15 },
+    { level: 16, name: "Concentration Crusader ⚔️", maxLevel: 20 },
+    { level: 21, name: "Discipline Dynamo ⚡", maxLevel: 30 },
+    { level: 31, name: "Willpower Wizard 🧙", maxLevel: 40 },
+    { level: 41, name: "Flow State Sage 🌊", maxLevel: 50 },
+    { level: 51, name: "Productivity Phoenix 🔥", maxLevel: 60 },
+    { level: 61, name: "Time Lord 🕰️", maxLevel: 70 },
+    { level: 71, name: "Cognitive Champion 🏆", maxLevel: 80 },
+    { level: 81, name: "Quantum Thinker 🌌", maxLevel: 90 },
+    { level: 91, name: "Cerebral Sovereign 👑", maxLevel: 100 },
+    { level: 101, name: "Ascended Mind 🌟", maxLevel: 125 },
+    { level: 126, name: "Consciousness Colossus 🗿", maxLevel: 150 },
+    { level: 151, name: "Hyperlink Hivemind 🔮", maxLevel: 175 },
+    { level: 176, name: "Nebula Nexus 🌠", maxLevel: 200 },
+    { level: 201, name: "ULTRABRAIN OMEGA 🧠⚡", maxLevel: 9999 }
 ];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -534,11 +544,13 @@ function gainGold(amount) {
 }
 
 // Level up
+// Level up
 function levelUp() {
     const oldLevel = level;
     level++;
     xp = xp - xpToNextLevel;
-    xpToNextLevel = Math.round(xpToNextLevel * 1.2); // Each level requires more XP
+    // More aggressive XP scaling to match the larger XP values
+    xpToNextLevel = Math.round(xpToNextLevel * 1.15 + 500); 
     
     // Check if reached a new rank
     const oldRank = getCurrentRankForLevel(oldLevel);
@@ -660,11 +672,12 @@ function addHabit() {
         }
     }
     
+    // Updated XP rewards to match task scale
     const xpRewards = {
-        easy: 5,
-        medium: 10,
-        hard: 20,
-        extreme: 35
+        easy: 150,
+        medium: 300,
+        hard: 500,
+        extreme: 1000
     };
     
     const habit = {
@@ -972,7 +985,8 @@ function checkStreakMilestones(habit, streak) {
     const milestones = [7, 30, 50, 100, 365];
     
     if (milestones.includes(streak)) {
-        const bonusXP = streak * 2; // Bonus XP for milestones
+        // Updated bonus XP for streaks (now 10x higher)
+        const bonusXP = streak * 20;
         gainXP(bonusXP);
         
         // Show streak modal
