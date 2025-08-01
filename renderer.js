@@ -9,6 +9,7 @@ let stopwatchTime = 0;
 let stopwatchStart = 0;
 let completedQuests = [];
 let xpToNextLevel = 500;
+let rewards = [];
 let habits = [];
 let habitHistory = {}; // Will store completion data by date
 let achievements = [
@@ -219,38 +220,136 @@ function renderQuestsList() {
     });
 }
 
-// Render quest history
+// Update your renderQuestHistory function to include filtering
 function renderQuestHistory() {
     const historyList = document.getElementById('history-list');
     historyList.innerHTML = '';
+    
+    // Get filter values
+    const monthFilter = document.getElementById('month-filter').value;
+    const durationFilter = document.getElementById('duration-filter').value;
+    
+    // Populate month filter if needed
+    populateMonthFilter();
     
     if (completedQuests.length === 0) {
         historyList.innerHTML = '<div class="empty-state">No completed quests yet. Finish a quest to see its history here!</div>';
         return;
     }
     
-    // Sort by most recent first
-    const sortedQuests = [...completedQuests].sort((a, b) => b.completedTime - a.completedTime);
+    // Apply filters
+    let filteredQuests = [...completedQuests];
     
+    // Filter by month
+    if (monthFilter !== 'all') {
+        const [year, month] = monthFilter.split('-');
+        filteredQuests = filteredQuests.filter(quest => {
+            const questDate = new Date(quest.completedTime);
+            return questDate.getFullYear() === parseInt(year) && 
+                   questDate.getMonth() === parseInt(month) - 1;
+        });
+    }
+    
+    // Filter by duration
+    if (durationFilter !== 'all') {
+        filteredQuests = filteredQuests.filter(quest => {
+            const duration = quest.duration;
+            switch(durationFilter) {
+                case 'short': return duration < 300000; // Less than 5 minutes
+                case 'medium': return duration >= 300000 && duration < 1800000; // 5-30 minutes
+                case 'long': return duration >= 1800000 && duration < 3600000; // 30-60 minutes
+                case 'extended': return duration >= 3600000; // More than 60 minutes
+                default: return true;
+            }
+        });
+    }
+    
+    // Sort by most recent first
+    const sortedQuests = filteredQuests.sort((a, b) => b.completedTime - a.completedTime);
+    
+    // Show empty state if no quests match filters
+    if (sortedQuests.length === 0) {
+        historyList.innerHTML = '<div class="empty-state">No quests match your filter criteria</div>';
+        return;
+    }
+    
+    // Render the filtered quests
     sortedQuests.forEach(quest => {
         const formattedTime = formatTime(quest.duration);
         const questDate = new Date(quest.completedTime).toLocaleDateString();
         
+        // Format timestamps - handle legacy quests without timestamps
+        let timeInfo = '';
+        if (quest.startTime && quest.endTime) {
+            const startTime = new Date(quest.startTime).toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            const endTime = new Date(quest.endTime).toLocaleTimeString('en-US', { 
+                hour12: false, 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            timeInfo = `
+                <div class="history-timestamps">
+                    <span class="timestamp-label">Started:</span> <span class="timestamp-value">${startTime}</span>
+                    <span class="timestamp-label">Ended:</span> <span class="timestamp-value">${endTime}</span>
+                </div>
+            `;
+        }
+        
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
         historyItem.innerHTML = `
-            <div>
+            <div class="history-main-info">
                 <div class="history-quest-name">${quest.name}</div>
                 <div class="history-date">${questDate}</div>
+                ${timeInfo}
             </div>
             <div class="history-details">
                 <span class="history-duration">${formattedTime}</span>
-                <span class="history-xp">+${quest.xpReward} XP</span>
+                <span class="history-xp">+${quest.earnedXP || quest.xpReward} XP</span>
+            </div>
+            <div class="history-actions">
+                <button class="delete-history-btn" data-quest-id="${quest.id || quest.completedTime}" title="Delete this quest log">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         `;
         
         historyList.appendChild(historyItem);
     });
+    
+    // Add event listeners to delete buttons
+    document.querySelectorAll('.delete-history-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const questId = e.currentTarget.getAttribute('data-quest-id');
+            deleteQuestFromHistory(questId);
+        });
+    });
+}
+
+// Add function to delete a quest from history
+function deleteQuestFromHistory(questId) {
+    if (confirm('Are you sure you want to delete this quest from your history? This action cannot be undone.')) {
+        // Find and remove the quest from completedQuests array
+        completedQuests = completedQuests.filter(quest => {
+            // Use either the quest ID or completion time as identifier
+            const identifier = quest.id || quest.completedTime;
+            return identifier.toString() !== questId.toString();
+        });
+        
+        // Re-render the history and save state
+        renderQuestHistory();
+        populateMonthFilter(); // Update the month filter options
+        saveGameState();
+        
+        // Show a toast notification
+        showToast('📝 Quest deleted from history');
+    }
 }
 
 // Start a quest
@@ -353,12 +452,18 @@ function completeActiveQuest() {
     const earnedXP = Math.round(activeQuest.xpReward * bonusMultiplier);
     const earnedGold = Math.round(earnedXP / 10);
     
+    // Calculate start and end times
+    const endTime = new Date();
+    const startTime = new Date(endTime.getTime() - questDuration);
+    
     // Add to completed quests
     const completedQuest = {
         ...activeQuest,
-        completedTime: new Date(),
+        completedTime: endTime,
         duration: questDuration,
-        earnedXP
+        earnedXP,
+        startTime: startTime,
+        endTime: endTime
     };
     
     completedQuests.push(completedQuest);
@@ -994,81 +1099,6 @@ function checkAchievements() {
                 console.log(`Achievement unlocked: ${achievement.name}`);
             }
         }
-    });
-}
-
-// Update your renderQuestHistory function to include filtering
-function renderQuestHistory() {
-    const historyList = document.getElementById('history-list');
-    historyList.innerHTML = '';
-    
-    // Get filter values
-    const monthFilter = document.getElementById('month-filter').value;
-    const durationFilter = document.getElementById('duration-filter').value;
-    
-    // Populate month filter if needed
-    populateMonthFilter();
-    
-    if (completedQuests.length === 0) {
-        historyList.innerHTML = '<div class="empty-state">No completed quests yet. Finish a quest to see its history here!</div>';
-        return;
-    }
-    
-    // Apply filters
-    let filteredQuests = [...completedQuests];
-    
-    // Filter by month
-    if (monthFilter !== 'all') {
-        const [year, month] = monthFilter.split('-');
-        filteredQuests = filteredQuests.filter(quest => {
-            const questDate = new Date(quest.completedTime);
-            return questDate.getFullYear() === parseInt(year) && 
-                   questDate.getMonth() === parseInt(month) - 1;
-        });
-    }
-    
-    // Filter by duration
-    if (durationFilter !== 'all') {
-        filteredQuests = filteredQuests.filter(quest => {
-            const duration = quest.duration;
-            switch(durationFilter) {
-                case 'short': return duration < 300000; // Less than 5 minutes
-                case 'medium': return duration >= 300000 && duration < 1800000; // 5-30 minutes
-                case 'long': return duration >= 1800000 && duration < 3600000; // 30-60 minutes
-                case 'extended': return duration >= 3600000; // More than 60 minutes
-                default: return true;
-            }
-        });
-    }
-    
-    // Sort by most recent first
-    const sortedQuests = filteredQuests.sort((a, b) => b.completedTime - a.completedTime);
-    
-    // Show empty state if no quests match filters
-    if (sortedQuests.length === 0) {
-        historyList.innerHTML = '<div class="empty-state">No quests match your filter criteria</div>';
-        return;
-    }
-    
-    // Render the filtered quests
-    sortedQuests.forEach(quest => {
-        const formattedTime = formatTime(quest.duration);
-        const questDate = new Date(quest.completedTime).toLocaleDateString();
-        
-        const historyItem = document.createElement('div');
-        historyItem.className = 'history-item';
-        historyItem.innerHTML = `
-            <div>
-                <div class="history-quest-name">${quest.name}</div>
-                <div class="history-date">${questDate}</div>
-            </div>
-            <div class="history-details">
-                <span class="history-duration">${formattedTime}</span>
-                <span class="history-xp">+${quest.xpReward} XP</span>
-            </div>
-        `;
-        
-        historyList.appendChild(historyItem);
     });
 }
 

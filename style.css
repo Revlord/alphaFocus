@@ -351,41 +351,138 @@ input:focus {
 .history-item {
     display: flex;
     justify-content: space-between;
-    padding: 15px 8px;
+    align-items: flex-start;
+    padding: 18px 12px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     transition: var(--transition);
+    gap: 15px;
+    position: relative;
 }
 
 .history-item:hover {
     background-color: rgba(0, 0, 0, 0.02);
 }
 
+.history-item:hover .history-actions {
+    opacity: 1;
+}
+
+.history-main-info {
+    flex: 1;
+    min-width: 0; /* Allows flex item to shrink */
+}
+
 .history-quest-name {
     font-weight: 500;
     color: var(--text-color);
+    margin-bottom: 4px;
 }
 
 .history-date {
     font-size: 0.85rem;
     color: var(--text-secondary);
-    margin-top: 3px;
+    margin-bottom: 8px;
+}
+
+.history-timestamps {
+    display: flex;
+    gap: 15px;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.timestamp-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.timestamp-value {
+    color: var(--text-color);
+    font-family: monospace;
+    font-weight: 600;
+    background-color: rgba(151, 193, 169, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 8px;
 }
 
 .history-details {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    flex-shrink: 0;
+    gap: 4px;
 }
 
 .history-duration {
     font-family: monospace;
     color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .history-xp {
     color: var(--accent-color);
     font-weight: 600;
     font-size: 0.95rem;
+}
+
+.history-actions {
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    margin-left: 10px;
+}
+
+.delete-history-btn {
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.2);
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-history-btn:hover {
+    background: rgba(244, 67, 54, 0.8);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Responsive adjustments for timestamps */
+@media (max-width: 768px) {
+    .history-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .history-details {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .history-timestamps {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .timestamp-value {
+        margin-right: 0;
+        margin-left: 8px;
+    }
+    
+    .history-actions {
+        opacity: 1;
+        justify-content: center;
+    }
 }
 
 /* Achievements */
