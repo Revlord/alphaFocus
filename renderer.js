@@ -215,7 +215,12 @@ function renderQuestsList() {
         questElement.innerHTML = `
             <div class="quest-name">${quest.name}</div>
             <div class="quest-xp">${quest.xpReward} XP</div>
-            <button class="start-quest-btn" data-quest-id="${quest.id}">Start</button>
+            <div class="quest-actions">
+                <button class="start-quest-btn" data-quest-id="${quest.id}">Start</button>
+                <button class="delete-quest-btn" data-quest-id="${quest.id}" title="Delete quest">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
         `;
         
         questsList.appendChild(questElement);
@@ -228,6 +233,23 @@ function renderQuestsList() {
             startQuest(questId);
         });
     });
+    
+    // Add event listeners to delete buttons
+    document.querySelectorAll('.delete-quest-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const questId = parseInt(e.currentTarget.getAttribute('data-quest-id'));
+            deleteQuest(questId);
+        });
+    });
+}
+
+function deleteQuest(questId) {
+    if (confirm('Are you sure you want to delete this quest?')) {
+        quests = quests.filter(quest => quest.id !== questId);
+        renderQuestsList();
+        saveGameState();
+        showToast('🗑️ Quest deleted from queue');
+    }
 }
 
 // Update your renderQuestHistory function to include filtering

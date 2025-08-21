@@ -296,6 +296,34 @@ input:focus {
     gap: 4px;
 }
 
+.quest-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.delete-quest-btn {
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.2);
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+}
+
+.delete-quest-btn:hover {
+    background: rgba(244, 67, 54, 0.8);
+    color: white;
+    transform: translateY(-1px);
+}
+
 /* Active Quest Panel */
 #stopwatch {
     font-size: 3rem;
