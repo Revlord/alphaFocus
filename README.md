@@ -31,4 +31,4 @@ npm run build
 
 ## Data
 
-Stored locally in `localStorage`. Reset via Settings (secret code: `grindfor2030`).
+Stored locally in `localStorage`. Reset code is a secret, figure it out from the files.
