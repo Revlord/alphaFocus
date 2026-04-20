@@ -3,230 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus RPG</title>
+    <title>AlphaFocus</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1> AlphaFocus</h1>
-        </header>
-        
-        <div class="stats-panel">
-            <div class="stat">
-                <label>Level</label>
-                <span id="level">1</span>
-                <div class="rank" id="rank">Goldfish Brain 🐠</div>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">α</div>
+                <div class="brand-name">AlphaFocus</div>
             </div>
-            <div class="stat">
-                <label>Experience</label>
-                <span id="xp">0</span> / <span id="xp-to-level">500</span>
+
+            <nav class="nav">
+                <button class="nav-item active" data-tab="focus">
+                    <i class="fas fa-bullseye"></i><span>Focus</span>
+                </button>
+                <button class="nav-item" data-tab="habits">
+                    <i class="fas fa-calendar-check"></i><span>Habits</span>
+                </button>
+                <button class="nav-item" data-tab="shop">
+                    <i class="fas fa-store"></i><span>Shop</span>
+                </button>
+                <button class="nav-item" data-tab="history">
+                    <i class="fas fa-scroll"></i><span>History</span>
+                </button>
+                <button class="nav-item" data-tab="achievements">
+                    <i class="fas fa-trophy"></i><span>Achievements</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Level</span>
+                    <span class="stat-value" id="level">1</span>
+                </div>
+                <div class="rank-line" id="rank">Starter</div>
                 <div class="progress-bar">
                     <div class="progress" id="xp-progress"></div>
                 </div>
+                <div class="stat-row subtle">
+                    <span><span id="xp">0</span> / <span id="xp-to-level">2500</span> XP</span>
+                    <span class="gold-display"><span id="gold">0</span> <i class="fas fa-coins"></i></span>
+                </div>
+                <button class="settings-btn" id="open-settings-btn">
+                    <i class="fas fa-cog"></i> Settings
+                </button>
             </div>
-            <div class="stat">
-                <label>Gold</label>
-                <span id="gold">0</span> <span class="gold-icon">💰</span>
-            </div>
-        </div>
-        
-        <div class="main-content">
-            <div class="quest-panel">
-                <h2><i class="fas fa-fire"></i> Your Quests</h2>
-                <div class="add-quest">
-                    <input type="text" id="quest-name" placeholder="Enter quest name...">
-                    <div class="quest-reward-group">
-                        <input type="number" id="quest-xp" placeholder="XP reward" min="1" value="10">
-                        <button id="add-quest-btn"><i class="fas fa-plus"></i> Add</button>
+        </aside>
+
+        <main class="main">
+            <!-- FOCUS TAB -->
+            <section class="tab active" data-tab="focus">
+                <header class="tab-header">
+                    <div>
+                        <h1>Focus</h1>
+                        <p class="subtitle">Dump tasks in the inbox. Drag them to Today when ready. Start one when you're locked in.</p>
+                    </div>
+                </header>
+
+                <div class="quick-add">
+                    <div class="quick-add-main">
+                        <i class="fas fa-magic-wand-sparkles quick-add-icon"></i>
+                        <input type="text" id="quick-add-input"
+                               placeholder="Task Name">
+                        <button id="quick-add-btn" class="primary-btn">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                        <button id="toggle-detailed-add" class="ghost-btn" title="Expanded form">
+                            <i class="fas fa-sliders"></i>
+                        </button>
+                    </div>
+                    <div class="quick-add-hints">
+                        <span><code>#tag</code> tags</span>
+                        <span><code>!high</code> <code>!med</code> <code>!low</code> priority</span>
+                        <span><code>30m</code> / <code>1h</code> estimate</span>
+                        <span><code>50xp</code> reward</span>
+                        <span><code>&gt;today</code> <code>&gt;later</code> <code>&gt;inbox</code> lane</span>
+                    </div>
+
+                    <div class="detailed-add hidden" id="detailed-add">
+                        <div class="detailed-row">
+                            <input type="text" id="detailed-name" placeholder="Quest name">
+                            <input type="text" id="detailed-tags" placeholder="Tags (comma separated)">
+                        </div>
+                        <div class="detailed-row">
+                            <select id="detailed-priority">
+                                <option value="high">🔴 High priority</option>
+                                <option value="medium" selected>🟡 Medium priority</option>
+                                <option value="low">🟢 Low priority</option>
+                            </select>
+                            <select id="detailed-lane">
+                                <option value="inbox" selected>📥 Inbox</option>
+                                <option value="today">🎯 Today</option>
+                                <option value="later">📦 Later</option>
+                            </select>
+                            <input type="number" id="detailed-estimate" placeholder="Est. min" min="1">
+                            <input type="number" id="detailed-xp" placeholder="XP reward" min="1" value="50">
+                            <button id="detailed-add-btn" class="primary-btn">
+                                <i class="fas fa-plus"></i> Add Quest
+                            </button>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="quests-list" id="quests-list">
-                    <!-- Quests will be added here dynamically -->
-                </div>
-            </div>
 
-            <div class="active-quest-panel" id="active-quest-panel">
-                <h2><i class="fas fa-sword"></i> Active Quest</h2>
-                <div id="no-active-quest" class="empty-state">No active quest. Start one from your quests list!</div>
-                <div id="quest-details" class="hidden">
-                    <h3 id="active-quest-name">Quest Name</h3>
-                    <div id="stopwatch">00:00:00:00</div> <!-- Updated format -->
-                    <div class="quest-controls">
-                        <button id="complete-quest-btn"><i class="fas fa-check"></i> Complete Quest</button>
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="quest-search" placeholder="Search quests…">
+                    </div>
+                    <div class="priority-filters">
+                        <button class="chip active" data-priority="all">All</button>
+                        <button class="chip priority-high" data-priority="high">High</button>
+                        <button class="chip priority-medium" data-priority="medium">Medium</button>
+                        <button class="chip priority-low" data-priority="low">Low</button>
+                    </div>
+                    <div class="tag-filters" id="tag-filters">
+                        <!-- dynamic tag chips -->
                     </div>
                 </div>
+
+                <div class="lanes">
+                    <div class="lane" data-lane="inbox">
+                        <div class="lane-head">
+                            <div class="lane-title">
+                                <span class="lane-icon">📥</span>
+                                <h3>Inbox</h3>
+                                <span class="lane-count" id="count-inbox">0</span>
+                            </div>
+                            <span class="lane-hint">Dump anything here</span>
+                        </div>
+                        <div class="lane-list" id="lane-inbox" data-lane="inbox"></div>
+                    </div>
+
+                    <div class="lane focus-lane" data-lane="today">
+                        <div class="lane-head">
+                            <div class="lane-title">
+                                <span class="lane-icon">🎯</span>
+                                <h3>Today</h3>
+                                <span class="lane-count" id="count-today">0</span>
+                            </div>
+                            <span class="lane-hint">What you're working on</span>
+                        </div>
+                        <div class="lane-list" id="lane-today" data-lane="today"></div>
+                    </div>
+
+                    <div class="lane" data-lane="later">
+                        <div class="lane-head">
+                            <div class="lane-title">
+                                <span class="lane-icon">📦</span>
+                                <h3>Later</h3>
+                                <span class="lane-count" id="count-later">0</span>
+                            </div>
+                            <span class="lane-hint">Backlog — out of sight</span>
+                        </div>
+                        <div class="lane-list" id="lane-later" data-lane="later"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HABITS TAB -->
+            <section class="tab" data-tab="habits">
+                <header class="tab-header">
+                    <div>
+                        <h1>Habits</h1>
+                        <p class="subtitle">Build streaks. Earn XP just for showing up.</p>
+                    </div>
+                </header>
+
+                <div class="add-habit card">
+                    <input type="text" id="habit-name" placeholder="Habit name (e.g. 'Drink 8 glasses of water')">
+                    <div class="habit-details-group">
+                        <select id="habit-difficulty">
+                            <option value="easy">Easy (+150 XP) 🟢</option>
+                            <option value="medium" selected>Medium (+300 XP) 🟡</option>
+                            <option value="hard">Hard (+500 XP) 🔴</option>
+                            <option value="extreme">Extreme (+1000 XP) 🟣</option>
+                        </select>
+                        <select id="habit-frequency">
+                            <option value="daily" selected>Daily</option>
+                            <option value="weekdays">Weekdays only</option>
+                            <option value="weekends">Weekends only</option>
+                            <option value="custom">Custom days</option>
+                        </select>
+                        <button id="add-habit-btn" class="primary-btn">
+                            <i class="fas fa-plus"></i> Add Habit
+                        </button>
+                    </div>
+                    <div class="custom-days-selector hidden" id="custom-days-selector">
+                        <label>Select days:</label>
+                        <div class="days-checkboxes">
+                            <label><input type="checkbox" value="0"> Sun</label>
+                            <label><input type="checkbox" value="1"> Mon</label>
+                            <label><input type="checkbox" value="2"> Tue</label>
+                            <label><input type="checkbox" value="3"> Wed</label>
+                            <label><input type="checkbox" value="4"> Thu</label>
+                            <label><input type="checkbox" value="5"> Fri</label>
+                            <label><input type="checkbox" value="6"> Sat</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="habit-filters">
+                    <button class="chip active" data-filter="all">All Habits</button>
+                    <button class="chip" data-filter="active">Active Today</button>
+                    <button class="chip" data-filter="completed">Completed Today</button>
+                    <button class="chip" data-filter="streak">Best Streaks</button>
+                </div>
+
+                <div class="habits-list" id="habits-list"></div>
+            </section>
+
+            <!-- SHOP TAB -->
+            <section class="tab" data-tab="shop">
+                <header class="tab-header">
+                    <div>
+                        <h1>Gold Shop</h1>
+                        <p class="subtitle">Spend your hard-earned gold on rewards you define.</p>
+                    </div>
+                </header>
+
+                <div class="add-reward card">
+                    <input type="text" id="reward-name" placeholder="Reward name">
+                    <div class="reward-price-group">
+                        <input type="number" id="reward-price" placeholder="Gold cost" min="1" value="50">
+                        <button id="add-reward-btn" class="primary-btn">
+                            <i class="fas fa-plus"></i> Add Reward
+                        </button>
+                    </div>
+                </div>
+
+                <div class="rewards-list" id="rewards-list"></div>
+            </section>
+
+            <!-- HISTORY TAB -->
+            <section class="tab" data-tab="history">
+                <header class="tab-header">
+                    <div>
+                        <h1>Quest History</h1>
+                        <p class="subtitle">A log of everything you've completed.</p>
+                    </div>
+                </header>
+
+                <div class="history-filters card">
+                    <div class="filter-group">
+                        <label for="month-filter">Date:</label>
+                        <select id="month-filter">
+                            <option value="all">All time</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="duration-filter">Duration:</label>
+                        <select id="duration-filter">
+                            <option value="all">All durations</option>
+                            <option value="short">Short (&lt; 5 min)</option>
+                            <option value="medium">Medium (5–30 min)</option>
+                            <option value="long">Long (30–60 min)</option>
+                            <option value="extended">Extended (&gt; 60 min)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="mode-filter">Mode:</label>
+                        <select id="mode-filter">
+                            <option value="all">All modes</option>
+                            <option value="stopwatch">Stopwatch</option>
+                            <option value="timer">Timer</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="history-list" id="history-list"></div>
+            </section>
+
+            <!-- ACHIEVEMENTS TAB -->
+            <section class="tab" data-tab="achievements">
+                <header class="tab-header">
+                    <div>
+                        <h1>Achievements</h1>
+                        <p class="subtitle">Milestones earn bonus XP.</p>
+                    </div>
+                </header>
+                <ul id="achievements-list" class="achievements-list"></ul>
+            </section>
+        </main>
+    </div>
+
+    <!-- FLOATING ACTIVE QUEST BAR -->
+    <div id="active-quest-bar" class="active-quest-bar hidden">
+        <div class="aq-info">
+            <div class="aq-label">
+                <i class="fas fa-bolt"></i>
+                <span class="aq-mode-label" id="aq-mode-label">STOPWATCH</span>
             </div>
-            
-            <div class="achievements-panel">
-                <h2><i class="fas fa-trophy"></i> Achievements</h2>
-                <ul id="achievements-list">
-                    <li class="locked">First Victory - Focus for 10 minutes</li>
-                    <li class="locked">Silver Mind - Complete 5x 30-Min Focus Sessions</li>
-                    <li class="locked">Brain of Steel - Focus for 3 hours in a day</li>
-                </ul>
+            <div class="aq-name" id="aq-name">Quest name</div>
+            <div class="aq-meta" id="aq-meta"></div>
+        </div>
+
+        <div class="aq-center">
+            <div class="aq-clock" id="aq-clock">00:00:00</div>
+            <div class="aq-mode-switcher" id="aq-mode-switcher">
+                <button data-mode="stopwatch" class="active"><i class="fas fa-stopwatch"></i> Stopwatch</button>
+                <button data-mode="timer"><i class="fas fa-hourglass-half"></i> Timer</button>
+            </div>
+            <div class="aq-timer-input hidden" id="aq-timer-input">
+                <input type="number" id="aq-timer-minutes" min="1" value="25" placeholder="Minutes">
+                <span>min</span>
+                <div class="aq-timer-presets">
+                    <button data-min="15">15</button>
+                    <button data-min="25">25</button>
+                    <button data-min="45">45</button>
+                    <button data-min="60">60</button>
+                    <button data-min="90">90</button>
+                </div>
             </div>
         </div>
 
-        <!-- Habit Tracking Panel -->
-        <div class="habit-tracking-panel">
-            <h2><i class="fas fa-calendar-check"></i> Habit Tracking</h2>
-            <div class="habit-description">
-                <p>Build consistency and earn XP by tracking your daily habits! 🌟</p>
-            </div>
-
-            <div class="add-habit">
-                <input type="text" id="habit-name" placeholder="Habit name (e.g. 'Drink 8 glasses of water')">
-                <div class="habit-details-group">
-                    <select id="habit-difficulty">
-                        <option value="easy">Easy (+5 XP) 🟢</option>
-                        <option value="medium" selected>Medium (+10 XP) 🟡</option>
-                        <option value="hard">Hard (+20 XP) 🔴</option>
-                        <option value="extreme">Extreme (+35 XP) 🟣</option>
-                    </select>
-                    <select id="habit-frequency">
-                        <option value="daily" selected>Daily</option>
-                        <option value="weekdays">Weekdays Only</option>
-                        <option value="weekends">Weekends Only</option>
-                        <option value="custom">Custom Days</option>
-                    </select>
-                    <button id="add-habit-btn"><i class="fas fa-plus"></i> Add Habit</button>
-                </div>
-            </div>
-
-            <div class="custom-days-selector hidden" id="custom-days-selector">
-                <label>Select Days:</label>
-                <div class="days-checkboxes">
-                    <label><input type="checkbox" value="0"> Sun</label>
-                    <label><input type="checkbox" value="1"> Mon</label>
-                    <label><input type="checkbox" value="2"> Tue</label>
-                    <label><input type="checkbox" value="3"> Wed</label>
-                    <label><input type="checkbox" value="4"> Thu</label>
-                    <label><input type="checkbox" value="5"> Fri</label>
-                    <label><input type="checkbox" value="6"> Sat</label>
-                </div>
-            </div>
-
-            <div class="habit-filters">
-                <button class="filter-btn active" data-filter="all">All Habits</button>
-                <button class="filter-btn" data-filter="active">Active Today</button>
-                <button class="filter-btn" data-filter="completed">Completed Today</button>
-                <button class="filter-btn" data-filter="streak">Best Streaks</button>
-            </div>
-
-            <div class="habits-container">
-                <div class="habits-list" id="habits-list">
-                    <!-- Habits will be added here dynamically -->
-                </div>
-            </div>
-        </div>
-        
-        <div class="history-panel">
-            <h2><i class="fas fa-scroll"></i> Quest History</h2>
-
-            <!-- filter options -->
-            <div class="history-filters">
-                <div class="filter-group">
-                    <label for="month-filter">Filter by date:</label>
-                    <select id="month-filter">
-                        <option value="all">All time</option>
-                        <!-- Month options will be added dynamically -->
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label for="duration-filter">Filter by duration:</label>
-                    <select id="duration-filter">
-                        <option value="all">All durations</option>
-                        <option value="short">Short (less than 5 min)</option>
-                        <option value="medium">Medium (5-30 min)</option>
-                        <option value="long">Long (30-60 min)</option>
-                        <option value="extended">Extended (> 60 min)</option>
-                    </select>
-                </div>
-            </div>
-            <div class="history-list" id="history-list">
-                <!-- Completed quests will be shown here -->
-            </div>
-        </div>
-        <div class="settings-panel">
-            <button id="reset-game-btn" class="danger-btn"><i class="fas fa-trash-alt"></i> Reset Game Data</button>
+        <div class="aq-actions">
+            <button id="aq-start-btn" class="primary-btn"><i class="fas fa-play"></i> Start</button>
+            <button id="aq-pause-btn" class="ghost-btn hidden"><i class="fas fa-pause"></i> Pause</button>
+            <button id="aq-resume-btn" class="primary-btn hidden"><i class="fas fa-play"></i> Resume</button>
+            <button id="aq-complete-btn" class="success-btn hidden"><i class="fas fa-check"></i> Complete</button>
+            <button id="aq-cancel-btn" class="ghost-btn" title="Cancel active quest"><i class="fas fa-xmark"></i></button>
         </div>
     </div>
-    
+
+    <!-- MODALS -->
     <div id="level-up-modal" class="modal">
         <div class="modal-content">
-            <h2>🎉 LEVEL UP! 🎉</h2>
-            <p>Congratulations! You've reached level <span id="new-level">2</span>!</p>
-            <p>New rank: <span id="new-rank">Bronze Novice 🎖️</span></p>
-            <button id="close-modal"><i class="fas fa-arrow-right"></i> Continue</button>
+            <div class="celebration">🎉</div>
+            <h2>LEVEL UP!</h2>
+            <p>You've reached level <span id="new-level">2</span></p>
+            <p class="rank-highlight">New rank: <span id="new-rank">Starter</span></p>
+            <button id="close-modal" class="primary-btn"><i class="fas fa-arrow-right"></i> Continue</button>
         </div>
     </div>
 
-    <div class="shop-panel">
-        <h2><i class="fas fa-store"></i> Gold Shop</h2>
-        <div class="shop-description">
-            <p>Create your own rewards to spend your hard-earned gold on!</p>
-        </div>
-    
-        <div class="add-reward">
-            <input type="text" id="reward-name" placeholder="Reward name (e.g. 'Play video games for 30 min')">
-            <div class="reward-price-group">
-                <input type="number" id="reward-price" placeholder="Gold cost" min="1" value="50">
-                <button id="add-reward-btn"><i class="fas fa-plus"></i> Add Reward</button>
-            </div>
-        </div>
-    
-        <div class="rewards-container">
-            <h3>Available Rewards</h3>
-            <div class="rewards-list" id="rewards-list">
-                <!-- Rewards will be added here dynamically -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Add this modal before the closing body tag -->
     <div id="redeem-modal" class="modal">
         <div class="modal-content">
-            <h2>🎉 Reward Redeemed!</h2>
-            <div class="reward-celebration">🎁</div>
+            <div class="celebration">🎁</div>
+            <h2>Reward Redeemed!</h2>
             <p>You've redeemed:</p>
-            <p id="redeemed-reward" class="redeemed-reward-name"></p>
-            <div class="modal-buttons">
-                <button id="close-redeem-modal"><i class="fas fa-check"></i> Awesome!</button>
-            </div>
-        </div>
-    </div>
-        
-    <div id="reset-modal" class="modal">
-        <div class="modal-content">
-            <h2>⚠️ Reset Game Data</h2>
-            <p>This will delete ALL game progress and cannot be undone!</p>
-            <p>Enter the secret code to continue:</p>
-            <input type="password" id="reset-code" placeholder="Enter secret code...">
-            <div class="modal-buttons">
-                <button id="confirm-reset-btn" class="danger-btn"><i class="fas fa-exclamation-triangle"></i> Reset Everything</button>
-                <button id="cancel-reset-btn"><i class="fas fa-times"></i> Cancel</button>
-            </div>
+            <p id="redeemed-reward" class="highlight-text"></p>
+            <button id="close-redeem-modal" class="primary-btn"><i class="fas fa-check"></i> Awesome!</button>
         </div>
     </div>
 
     <div id="streak-modal" class="modal">
         <div class="modal-content">
-            <h2>🔥 STREAK MILESTONE! 🔥</h2>
-            <div class="streak-celebration">⚡</div>
+            <div class="celebration">🔥</div>
+            <h2>Streak Milestone!</h2>
             <p>You've achieved a <span id="streak-days">7</span>-day streak with:</p>
-            <p id="streak-habit" class="streak-habit-name"></p>
-            <p>Bonus XP awarded: <span id="streak-bonus">+50 XP</span></p>
-            <div class="modal-buttons">
-                <button id="close-streak-modal"><i class="fas fa-fire"></i> Keep Going!</button>
+            <p id="streak-habit" class="highlight-text"></p>
+            <p>Bonus: <span id="streak-bonus" class="highlight-text">+50 XP</span></p>
+            <button id="close-streak-modal" class="primary-btn"><i class="fas fa-fire"></i> Keep Going!</button>
+        </div>
+    </div>
+
+    <div id="timer-end-modal" class="modal">
+        <div class="modal-content">
+            <div class="celebration">⏰</div>
+            <h2>Time's Up!</h2>
+            <p id="timer-end-quest-name" class="highlight-text"></p>
+            <p>You focused for <span id="timer-end-duration"></span></p>
+            <div class="timer-end-buttons">
+                <button id="timer-complete-btn" class="success-btn"><i class="fas fa-check"></i> Complete Quest</button>
+                <button id="timer-extend-5" class="ghost-btn">+5 min</button>
+                <button id="timer-extend-10" class="ghost-btn">+10 min</button>
+                <button id="timer-overtime-btn" class="ghost-btn"><i class="fas fa-stopwatch"></i> Overtime</button>
             </div>
         </div>
     </div>
-    
-<script src="renderer.js"></script>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-cog"></i> Settings</h2>
+            <div class="settings-section">
+                <h3>Sound</h3>
+                <label class="switch-row">
+                    <input type="checkbox" id="sound-toggle" checked>
+                    <span>Play chime when timer ends</span>
+                </label>
+            </div>
+            <div class="settings-section danger-section">
+                <h3>Danger Zone</h3>
+                <p class="subtle">Reset wipes all XP, gold, quests, habits, and rewards.</p>
+                <button id="reset-game-btn" class="danger-btn">
+                    <i class="fas fa-trash-alt"></i> Reset Game Data
+                </button>
+            </div>
+            <div class="modal-buttons">
+                <button id="close-settings-btn" class="ghost-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reset-modal" class="modal">
+        <div class="modal-content">
+            <div class="celebration">⚠️</div>
+            <h2>Reset Everything?</h2>
+            <p>This will delete ALL progress and cannot be undone.</p>
+            <p>Enter the secret code to continue:</p>
+            <input type="password" id="reset-code" placeholder="Secret code…">
+            <div class="modal-buttons">
+                <button id="confirm-reset-btn" class="danger-btn">
+                    <i class="fas fa-exclamation-triangle"></i> Reset
+                </button>
+                <button id="cancel-reset-btn" class="ghost-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="renderer.js"></script>
 </body>
 </html>
